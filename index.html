@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>TeachAI Worker Portal</title>
-
 <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
 <style>
 /* GLOBAL */
 body{
   font-family:'Inter',sans-serif;
-  background:#0b0f19;
+  background:#121212;
   color:#e5e7eb;
   margin:0;
 }
 /* TOPBAR */
 .topbar{
-  background:#111827;
-  border-bottom:1px solid #1f2937;
+  background:#1f1f1f;
+  border-bottom:1px solid #2c2c2c;
   padding:12px 20px;
   display:flex;
   justify-content:space-between;
@@ -24,8 +24,18 @@ body{
 }
 .logo{
   font-weight:bold;
-  font-size:18px;
+  font-size:20px;
   color:#f6851b;
+}
+.wallet-btn{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.wallet-btn img{
+  width:24px;
+  height:24px;
+  border-radius:50%;
 }
 /* BUTTON */
 button{
@@ -36,8 +46,11 @@ button{
   font-weight:bold;
   cursor:pointer;
   color:white;
+  transition:all .2s;
 }
-button:hover{opacity:.9;}
+button:hover{
+  transform:scale(1.05);
+}
 /* LAYOUT */
 .container{
   display:none;
@@ -46,36 +59,37 @@ button:hover{opacity:.9;}
 }
 .sidebar{
   width:260px;
-  background:#111827;
-  border-right:1px solid #1f2937;
+  background:#1f1f1f;
+  border-right:1px solid #2c2c2c;
   padding:20px;
 }
 .main{
   flex:1;
   padding:25px;
   overflow:auto;
-  background:#0b0f19;
+  background:#121212;
 }
 /* CARDS */
 .card{
-  background:#111827;
-  border:1px solid #1f2937;
+  background:#1f1f1f;
+  border:1px solid #2c2c2c;
   border-radius:16px;
   padding:20px;
   margin-bottom:20px;
-  box-shadow:0 0 0 1px rgba(255,255,255,0.02);
+  box-shadow:0 2px 10px rgba(0,0,0,0.3);
 }
 /* INPUTS */
 textarea,input{
   width:100%;
   padding:12px;
-  background:#020617;
-  border:1px solid #1f2937;
+  background:#1a1a1a;
+  border:1px solid #2c2c2c;
   border-radius:12px;
   color:white;
   font-size:14px;
   margin-top:8px;
   margin-bottom:12px;
+  transition:border 0.2s;
 }
 textarea:focus,input:focus{
   outline:none;
@@ -83,15 +97,15 @@ textarea:focus,input:focus{
 }
 /* DATA FEED */
 .data-item{
-  background:#020617;
-  border:1px solid #1f2937;
+  background:#1a1a1a;
+  border:1px solid #2c2c2c;
   padding:14px;
   border-radius:12px;
   margin-top:10px;
 }
 /* BLOCKCHAIN */
 .block-item{
-  background:#020617;
+  background:#1a1a1a;
   border-left:3px solid #f6851b;
   padding:12px;
   border-radius:10px;
@@ -107,6 +121,14 @@ textarea:focus,input:focus{
   align-items:center;
   text-align:center;
 }
+#landing h1{
+  font-size:36px;
+  margin-bottom:12px;
+}
+#landing p{
+  font-size:18px;
+  margin-bottom:20px;
+}
 /* MESSAGE */
 #messageBox{
   position:fixed;
@@ -119,13 +141,12 @@ textarea:focus,input:focus{
 }
 </style>
 </head>
-
 <body>
 
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="logo">TeachAI Worker Portal</div>
-  <div>
+  <div class="wallet-btn">
     <button id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
     <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
     <span id="wallet"></span>
@@ -195,9 +216,7 @@ let tasksCompleted = 0;
 let blockchain = [];
 
 // HASH
-function createHash(data){
-  return btoa(JSON.stringify(data)).slice(0,32);
-}
+function createHash(data){ return btoa(JSON.stringify(data)).slice(0,32); }
 
 // CREATE BLOCK
 function createBlock(question,corrected){
@@ -241,14 +260,14 @@ function showMessage(text){
   setTimeout(()=>{box.style.display="none";},4000);
 }
 
-// CONNECT
+// CONNECT WALLET
 async function connectWallet(){
   if(!window.ethereum){ alert("Install MetaMask"); return; }
   provider = new ethers.providers.Web3Provider(window.ethereum);
   await provider.send("eth_requestAccounts",[]);
   signer = provider.getSigner();
   const addr = await signer.getAddress();
-  document.getElementById("wallet").innerHTML = `<img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg" width="24"> ${addr.slice(0,6)}...${addr.slice(-4)}`;
+  document.getElementById("wallet").innerHTML = `<img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg"> ${addr.slice(0,6)}...${addr.slice(-4)}`;
   document.getElementById("walletInfo").innerText = `Wallet: ${addr}`;
   document.getElementById("landing").style.display="none";
   document.getElementById("dashboard").style.display="flex";
@@ -257,15 +276,14 @@ async function connectWallet(){
 }
 
 // LOGOUT
-function logout(){
-  signer=null; provider=null;
+function logout(){ signer=null; provider=null;
   document.getElementById("dashboard").style.display="none";
   document.getElementById("landing").style.display="flex";
   document.getElementById("connectBtn").style.display="inline-block";
   document.getElementById("logoutBtn").style.display="none";
 }
 
-// AI
+// AI GENERATOR
 function generateAI(){
   const responses=["Pattern detected","Estimated output","Generated logic","Context result","Training-based answer"];
   document.getElementById("aiAnswer").value=responses[Math.floor(Math.random()*responses.length)];
@@ -293,7 +311,7 @@ function displayData(){
   });
 }
 
-// SUBMIT
+// SUBMIT TASK
 async function submitWork(){
   if(!signer){ alert("Connect wallet first"); return; }
   const q=document.getElementById("questionInput").value.trim();
@@ -302,14 +320,12 @@ async function submitWork(){
   const r=document.getElementById("ratingInput").value.trim();
   if(!q||!a||!c||!r){ alert("Complete all fields"); return; }
 
-  // CREATE BLOCK
   createBlock(q,c);
-  // SAVE DATA
   saveData(q,c,r);
   tasksCompleted++;
   document.getElementById("taskCount").innerText = tasksCompleted;
 
-  // SEND TO BACKEND FOR TIB REWARD
+  // send to backend for TIB reward
   try{
     const addr = await signer.getAddress();
     await fetch("https://YOUR_BACKEND_URL/api/reward",{
