@@ -26,9 +26,13 @@ body {
   padding: 15px 30px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid #444;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .topbar button {
@@ -49,7 +53,6 @@ body {
 }
 
 #wallet {
-  margin-left: 30px;
   font-weight: bold;
   color: #0affd7;
   text-shadow: 0 0 5px #0affd7;
@@ -62,6 +65,7 @@ body {
   display: flex;
   height: calc(100vh - 60px);
   overflow: hidden;
+  flex-direction: row;
 }
 
 /* =======================
@@ -74,6 +78,7 @@ body {
   border-right: 1px solid #333;
   backdrop-filter: blur(8px);
   box-shadow: inset -3px 0 10px rgba(0,255,255,0.2);
+  flex-shrink: 0;
 }
 
 .sidebar h3 {
@@ -109,6 +114,9 @@ body {
   backdrop-filter: blur(12px);
   border-radius: 0 15px 15px 0;
   box-shadow: inset 0 0 50px rgba(0,255,223,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* =======================
@@ -119,9 +127,11 @@ body {
   border: 1px solid #0affd7;
   padding: 20px;
   border-radius: 15px;
-  margin-bottom: 25px;
   box-shadow: 0 0 15px rgba(0,255,223,0.3);
   transition: all 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .task-box:hover {
@@ -129,21 +139,20 @@ body {
   box-shadow: 0 0 30px rgba(0,255,223,0.5);
 }
 
-/* TEXTAREAS & SELECTS */
-textarea, select {
+/* INPUTS & SELECTS */
+textarea, select, input {
   width: 100%;
   padding: 12px;
-  margin-top: 10px;
   border-radius: 10px;
   border: 1px solid #0affd7;
   background: rgba(0,0,0,0.3);
   color: #fff;
-  resize: none;
   font-size: 14px;
+  resize: none;
   transition: all 0.3s ease;
 }
 
-textarea:focus, select:focus {
+textarea:focus, select:focus, input:focus {
   outline: none;
   box-shadow: 0 0 10px #0affd7;
   border-color: #00d4ff;
@@ -183,6 +192,48 @@ button:hover {
   box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 }
 
+/* =======================
+   RESPONSIVE
+======================= */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+  }
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #333;
+  }
+  .main {
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .task-box {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 10px 15px;
+  }
+  .task-box {
+    padding: 10px;
+    font-size: 13px;
+  }
+  textarea, select, input, button {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
 </style>
 
 </head>
