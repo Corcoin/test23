@@ -3,276 +3,539 @@
 <head>
 <meta charset="UTF-8">
 <title>TeachAI Worker Portal</title>
+
 <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  color: #fff;
-  margin: 0;
-  overflow: hidden;
+
+body{
+font-family:'Segoe UI';
+background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+color:white;
+margin:0;
+overflow:hidden;
 }
 
-.topbar {
-  background: rgba(0,0,0,0.85);
-  padding: 15px 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #444;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+.topbar{
+background:black;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
-.topbar span#welcome {
-  flex: 1;
-  text-align: center;
-  color: #f6851b;
-  font-weight: bold;
-  text-shadow: 0 0 5px #f6851b;
+button{
+padding:10px 18px;
+border:none;
+border-radius:10px;
+background:linear-gradient(90deg,#f6851b,#e2761b);
+color:white;
+font-weight:bold;
+cursor:pointer;
 }
 
-.topbar button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #fff;
-  background: linear-gradient(90deg,#f6851b,#e2761b);
-  box-shadow: 0 0 10px #e2761b,0 0 20px #f6851b inset;
-  transition: all 0.3s ease;
+.container{
+display:none;
+height:calc(100vh - 60px);
 }
 
-.topbar button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px #f6851b,0 0 20px #e2761b inset;
+.sidebar{
+width:280px;
+background:#111;
+padding:20px;
 }
 
-/* LANDING PAGE */
-#landing {
-  height: calc(100vh - 60px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 20px;
-  padding: 0 30px;
+.main{
+flex:1;
+padding:25px;
+overflow:auto;
+display:flex;
+flex-direction:column;
+gap:20px;
 }
 
-#landing h1 { font-size: 3em; color: #f6851b; text-shadow:0 0 10px #f6851b; margin:0; }
-#landing p { font-size:1.2em; max-width:600px; line-height:1.6em; }
-#landing ul { text-align:left; display:inline-block; margin:20px 0; }
-#landing ul li { margin-bottom:10px; }
-#landing button { font-size:1.2em; padding:15px 25px; }
-
-/* DASHBOARD CONTAINER */
-.container {
-  display: flex;
-  height: calc(100vh - 60px);
-  flex-direction: row;
-  display: none;
+.card{
+background:rgba(255,255,255,0.05);
+border:1px solid #f6851b;
+padding:20px;
+border-radius:15px;
 }
 
-.sidebar {
-  width: 260px;
-  background: rgba(20,20,20,0.95);
-  padding: 20px;
-  border-right: 1px solid #333;
-  backdrop-filter: blur(8px);
-  box-shadow: inset -3px 0 10px rgba(255,165,0,0.2);
-  flex-shrink: 0;
+textarea{
+width:100%;
+padding:10px;
+border-radius:10px;
+background:#000;
+color:white;
+border:1px solid #f6851b;
 }
 
-.sidebar h3 { margin-top:0; color:#f6851b; text-transform:uppercase; letter-spacing:1px; }
-.sidebar p { margin: 5px 0; }
-
-.main {
-  flex:1;
-  padding:25px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:20px;
+#landing{
+height:calc(100vh - 60px);
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
 }
 
-/* CARD STYLE */
-.card {
-  background: rgba(255,255,255,0.05);
-  border:1px solid #f6851b;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 0 15px rgba(246,133,27,0.3);
-  display:flex;
-  flex-direction:column;
-  gap:15px;
-  transition: all 0.4s ease;
-}
-.card:hover {
-  transform:translateY(-5px);
-  box-shadow:0 0 30px rgba(246,133,27,0.5);
+#messageBox{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#28a745;
+padding:15px;
+border-radius:10px;
+display:none;
 }
 
-textarea, select, input { 
-  width:100%; padding:12px; border-radius:10px; border:1px solid #f6851b; background:rgba(0,0,0,0.3); color:#fff; font-size:14px; resize:none;
+.data-item{
+background:#000;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+font-size:13px;
 }
-textarea:focus, select:focus, input:focus { outline:none; box-shadow:0 0 10px #f6851b; border-color:#f6851b; }
 
-@media(max-width:1024px){ .container{flex-direction:column;height:auto;} .sidebar{width:100%; border-right:none; border-bottom:1px solid #333;} .main{border-radius:0;} }
-@media(max-width:768px){ .topbar{flex-direction:column; align-items:flex-start; gap:10px;} }
-@media(max-width:480px){ .topbar{padding:10px 15px;} textarea, select, input, button{font-size:13px; padding:10px;} }
+.block-item{
+background:#050505;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+font-size:12px;
+border-left:3px solid #f6851b;
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="topbar">
-  <span id="welcome">TeachAI Worker Portal</span>
-  <button id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
-  <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
-  <span id="wallet"></span>
+
+<button id="connectBtn" onclick="connectWallet()">
+Connect MetaMask
+</button>
+
+<button id="logoutBtn"
+onclick="logout()"
+style="display:none;">
+Logout
+</button>
+
+<span id="wallet"></span>
+
 </div>
 
-<!-- Landing -->
 <div id="landing">
-  <h1>Welcome to TeachAI</h1>
-  <p>Earn crypto while helping train AI! Here’s how it works:</p>
-  <ul>
-    <li>1️⃣ Complete microtasks and earn <strong>TIB</strong> tokens.</li>
-    <li>2️⃣ Swap <strong>TIB → TIA</strong> to increase token value.</li>
-    <li>3️⃣ Spend <strong>TIA</strong> anywhere via virtual debit card.</li>
-    <li>4️⃣ Both <strong>TIA & TIB</strong> grow in value as demand increases.</li>
-    <li>💡 The more you work, the more token power you gain!</li>
-  </ul>
-  <button onclick="connectWallet()">Connect MetaMask to Start</button>
+
+<h1>TeachAI Worker Portal</h1>
+
+<p>
+Work Tasks → Earn TIB → Grow Value 🚀
+</p>
+
+<button onclick="connectWallet()">
+Connect Wallet
+</button>
+
 </div>
 
-<!-- Dashboard -->
 <div class="container" id="dashboard">
-  <div class="sidebar card">
-    <h3>Worker Panel</h3>
-    <h3>Your Balance</h3>
-    <p id="balance">TIB Balance: 0</p>
-    <p>Tasks Completed: <span id="taskCount">0</span></p>
-  </div>
-  <div class="main">
-    <div class="card">
-      <label>Ask AI a Question:</label>
-      <textarea id="questionInput" placeholder="Type a question for AI..."></textarea>
-      <button onclick="generateAI()">Generate AI Answer</button>
 
-      <label>AI Answer:</label>
-      <textarea id="aiAnswer" placeholder="AI answer will appear here"></textarea>
+<div class="sidebar">
 
-      <label>Rate AI Answer (1–5)</label>
-      <select id="rating">
-        <option value="">Select Rating</option>
-        <option value="1">1 - Poor</option>
-        <option value="2">2 - Fair</option>
-        <option value="3">3 - Good</option>
-        <option value="4">4 - Very Good</option>
-        <option value="5">5 - Perfect</option>
-      </select>
+<h3>Wallet Info</h3>
 
-      <label>Correct AI Answer:</label>
-      <textarea id="correctedAnswer" placeholder="Fix the AI answer if needed"></textarea>
+<p id="fullWallet"></p>
 
-      <button onclick="submitWork()">Submit Work & Mint TIB</button>
-    </div>
-  </div>
+<p id="balance">
+TIB Balance: 0
+</p>
+
+<p>
+Tasks Completed:
+<span id="taskCount">0</span>
+</p>
+
 </div>
+
+<div class="main">
+
+<div class="card">
+
+<label>Ask AI Question</label>
+
+<textarea id="questionInput"></textarea>
+
+<button onclick="generateAI()">
+Generate AI
+</button>
+
+<label>AI Answer</label>
+
+<textarea id="aiAnswer"></textarea>
+
+<label>Correct Answer</label>
+
+<textarea id="correctedAnswer"></textarea>
+
+<button onclick="submitWork()">
+Submit Work & Mint 0.1 TIB
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Your Submitted Data</h3>
+
+<div id="dataList"></div>
+
+</div>
+
+<div class="card">
+
+<h3>Live Blockchain Data Stream</h3>
+
+<div id="blockStream"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="messageBox"></div>
 
 <script>
-// ----------------------
-// CONFIGURE TIB TOKEN
-// ----------------------
-const TIB_ADDRESS = "0xYourTIBContractAddress"; // Replace with your deployed token
-const TIB_ABI = [ "function mint(address to,uint256 amount) public" ];
 
-let provider, signer, tibContract;
-let balance = 0, tasksCompleted = 0;
+/* CONFIG */
 
-// ----------------------
-// CONNECT WALLET
-// ----------------------
-async function connectWallet() {
-  if(!window.ethereum){ alert("MetaMask not detected."); return; }
-  provider = new ethers.providers.Web3Provider(window.ethereum,"any");
-  await provider.send("eth_requestAccounts",[]);
-  signer = provider.getSigner();
-  tibContract = new ethers.Contract(TIB_ADDRESS,TIB_ABI,signer);
+const TIB_ADDRESS="0xYourTIBContractAddress";
 
-  const addr = await signer.getAddress();
-  document.getElementById("wallet").innerText = "Connected: "+addr.slice(0,6)+"..."+addr.slice(-4);
+const TIB_ABI=[
+"function mint(address to,uint256 amount) public",
+"function balanceOf(address owner) view returns (uint256)"
+];
 
-  document.getElementById("landing").style.display="none";
-  document.getElementById("dashboard").style.display="flex";
-  document.getElementById("connectBtn").style.display="none";
-  document.getElementById("logoutBtn").style.display="inline-block";
+let provider;
+let signer;
+let tibContract;
+
+let tasksCompleted=0;
+
+/* BLOCKCHAIN SYSTEM */
+
+let blockchain=[];
+
+function createHash(data){
+return btoa(JSON.stringify(data)).slice(0,32);
 }
 
-// ----------------------
-// LOGOUT
-// ----------------------
+function createBlock(question,corrected){
+
+const prevHash=
+blockchain.length>0
+? blockchain[blockchain.length-1].hash
+: "GENESIS";
+
+const block={
+index:blockchain.length+1,
+timestamp:new Date().toLocaleTimeString(),
+question,
+corrected,
+previousHash:prevHash
+};
+
+block.hash=createHash(block);
+
+blockchain.push(block);
+
+localStorage.setItem(
+"teachai_chain",
+JSON.stringify(blockchain)
+);
+
+displayBlockchain();
+
+}
+
+function loadBlockchain(){
+
+let saved=
+JSON.parse(localStorage.getItem("teachai_chain"));
+
+if(saved){
+
+blockchain=saved;
+
+displayBlockchain();
+
+}
+
+}
+
+function displayBlockchain(){
+
+const container=
+document.getElementById("blockStream");
+
+container.innerHTML="";
+
+let lastBlocks=
+blockchain.slice(-5).reverse();
+
+lastBlocks.forEach(block=>{
+
+const div=
+document.createElement("div");
+
+div.className="block-item";
+
+div.innerHTML=
+
+"<b>Block #"+block.index+"</b><br>"+
+"Time: "+block.timestamp+"<br>"+
+"Hash: "+block.hash+"<br>"+
+"Prev: "+block.previousHash;
+
+container.appendChild(div);
+
+});
+
+}
+
+/* MESSAGE */
+
+function showMessage(text){
+
+const box=document.getElementById("messageBox");
+
+box.innerText=text;
+
+box.style.display="block";
+
+setTimeout(()=>{
+box.style.display="none";
+},4000);
+
+}
+
+/* CONNECT */
+
+async function connectWallet(){
+
+if(!window.ethereum){
+alert("Install MetaMask");
+return;
+}
+
+provider=
+new ethers.providers.Web3Provider(window.ethereum);
+
+await provider.send("eth_requestAccounts",[]);
+
+signer=provider.getSigner();
+
+tibContract=
+new ethers.Contract(
+TIB_ADDRESS,
+TIB_ABI,
+signer
+);
+
+const addr=
+await signer.getAddress();
+
+document.getElementById("wallet").innerText=
+addr.slice(0,6)+"..."+addr.slice(-4);
+
+document.getElementById("fullWallet").innerText=
+"Full Wallet: "+addr;
+
+loadBalance();
+
+document.getElementById("landing").style.display="none";
+document.getElementById("dashboard").style.display="flex";
+
+document.getElementById("connectBtn").style.display="none";
+document.getElementById("logoutBtn").style.display="inline-block";
+
+}
+
+/* LOAD BALANCE */
+
+async function loadBalance(){
+
+const addr=await signer.getAddress();
+
+const bal=
+await tibContract.balanceOf(addr);
+
+const formatted=
+ethers.utils.formatUnits(bal,18);
+
+document.getElementById("balance").innerText=
+"TIB Balance: "+
+parseFloat(formatted).toFixed(2);
+
+}
+
+/* LOGOUT */
+
 function logout(){
-  signer=null;
-  provider=null;
-  tibContract=null;
-  document.getElementById("wallet").innerText="";
-  document.getElementById("dashboard").style.display="none";
-  document.getElementById("landing").style.display="flex";
-  document.getElementById("connectBtn").style.display="inline-block";
-  document.getElementById("logoutBtn").style.display="none";
+
+signer=null;
+provider=null;
+tibContract=null;
+
+document.getElementById("dashboard").style.display="none";
+document.getElementById("landing").style.display="flex";
+
+document.getElementById("connectBtn").style.display="inline-block";
+document.getElementById("logoutBtn").style.display="none";
+
 }
 
-// ----------------------
-// AI GENERATOR
-// ----------------------
+/* AI */
+
 function generateAI(){
-  const q = document.getElementById("questionInput").value.trim();
-  if(!q || q.length<3){ alert("Enter a question first"); return; }
-  const responses=[
-    "Based on the input, this appears logically correct.",
-    "The correct result depends on additional variables.",
-    "This solution may vary depending on context.",
-    "The output was generated using learned patterns.",
-    "The result is estimated from previous examples."
-  ];
-  document.getElementById("aiAnswer").value = responses[Math.floor(Math.random()*responses.length)];
+
+const responses=[
+"Pattern detected",
+"Estimated output",
+"Generated logic",
+"Context result",
+"Training-based answer"
+];
+
+document.getElementById("aiAnswer").value=
+responses[Math.floor(Math.random()*responses.length)];
+
 }
 
-// ----------------------
-// SUBMIT WORK & MINT TIB
-// ----------------------
+/* SAVE DATA */
+
+function saveData(question,corrected){
+
+const data={
+question,
+corrected,
+date:new Date().toLocaleString()
+};
+
+let list=
+JSON.parse(localStorage.getItem("workerData"))||[];
+
+list.push(data);
+
+localStorage.setItem(
+"workerData",
+JSON.stringify(list)
+);
+
+displayData();
+
+}
+
+/* DISPLAY DATA */
+
+function displayData(){
+
+let list=
+JSON.parse(localStorage.getItem("workerData"))||[];
+
+const container=
+document.getElementById("dataList");
+
+container.innerHTML="";
+
+list.forEach(item=>{
+
+const div=document.createElement("div");
+
+div.className="data-item";
+
+div.innerHTML=
+
+"<b>Q:</b> "+item.question+
+"<br><b>A:</b> "+item.corrected+
+"<br><small>"+item.date+"</small>";
+
+container.appendChild(div);
+
+});
+
+}
+
+/* SUBMIT WORK */
+
 async function submitWork(){
-  if(!signer){ alert("Connect wallet first."); return; }
 
-  const question=document.getElementById("questionInput").value.trim();
-  const aiAnswer=document.getElementById("aiAnswer").value.trim();
-  const rating=parseInt(document.getElementById("rating").value);
-  const corrected=document.getElementById("correctedAnswer").value.trim();
-  if(!question||!aiAnswer||!rating||!corrected){ alert("Complete all fields"); return; }
-
-  try{
-    const tx=await tibContract.mint(await signer.getAddress(),ethers.utils.parseUnits(rating.toString(),18));
-    await tx.wait();
-    alert(`✅ Minted ${rating} TIB to your wallet!`);
-  }catch(err){ console.error(err); alert("Minting failed: "+err.message); return; }
-
-  balance+=rating;
-  tasksCompleted++;
-  document.getElementById("balance").innerText="TIB Balance: "+balance.toFixed(2);
-  document.getElementById("taskCount").innerText=tasksCompleted;
-
-  document.getElementById("questionInput").value="";
-  document.getElementById("aiAnswer").value="";
-  document.getElementById("rating").value="";
-  document.getElementById("correctedAnswer").value="";
+if(!signer){
+alert("Connect wallet first");
+return;
 }
+
+const q=document.getElementById("questionInput").value.trim();
+const a=document.getElementById("aiAnswer").value.trim();
+const c=document.getElementById("correctedAnswer").value.trim();
+
+if(!q||!a||!c){
+alert("Complete fields");
+return;
+}
+
+try{
+
+const amount=
+ethers.utils.parseUnits("0.1",18);
+
+const tx=
+await tibContract.mint(
+await signer.getAddress(),
+amount
+);
+
+await tx.wait();
+
+showMessage("✅ 0.1 TIB Minted");
+
+}
+catch(err){
+
+alert("Mint Failed: "+err.message);
+return;
+
+}
+
+/* CREATE BLOCK */
+
+createBlock(q,c);
+
+/* SAVE DATA */
+
+saveData(q,c);
+
+tasksCompleted++;
+
+document.getElementById("taskCount").innerText=
+tasksCompleted;
+
+loadBalance();
+
+document.getElementById("questionInput").value="";
+document.getElementById("aiAnswer").value="";
+document.getElementById("correctedAnswer").value="";
+
+}
+
+/* INIT */
+
+displayData();
+loadBlockchain();
+
 </script>
 
 </body>
