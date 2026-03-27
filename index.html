@@ -5,13 +5,14 @@
 <title>TeachAI Worker Portal</title>
 <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <style>
-body{
+body {
   font-family:'Inter',sans-serif;
   background:#121212;
   color:#e5e7eb;
   margin:0;
 }
-.topbar{
+/* TOPBAR */
+.topbar {
   background:#1f1f1f;
   border-bottom:1px solid #2c2c2c;
   padding:12px 20px;
@@ -19,21 +20,22 @@ body{
   justify-content:space-between;
   align-items:center;
 }
-.logo{
+.logo {
   font-weight:bold;
   font-size:20px;
   color:#f6851b;
 }
-.wallet-btn{
+.wallet-btn {
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
 }
-.wallet-btn img{
-  width:28px;
-  height:28px;
+.wallet-btn img {
+  width:32px;
+  height:32px;
+  border-radius:50%;
 }
-button{
+button {
   background:linear-gradient(90deg,#f6851b,#ff9d42);
   border:none;
   padding:10px 18px;
@@ -43,27 +45,29 @@ button{
   color:white;
   transition:all .2s;
 }
-button:hover{
+button:hover {
   transform:scale(1.05);
 }
-.container{
+/* LAYOUT */
+.container {
   display:none;
   height:calc(100vh - 60px);
   display:flex;
 }
-.sidebar{
+.sidebar {
   width:260px;
   background:#1f1f1f;
   border-right:1px solid #2c2c2c;
   padding:20px;
 }
-.main{
+.main {
   flex:1;
   padding:25px;
   overflow:auto;
   background:#121212;
 }
-.card{
+/* CARDS */
+.card {
   background:#1f1f1f;
   border:1px solid #2c2c2c;
   border-radius:16px;
@@ -71,7 +75,8 @@ button:hover{
   margin-bottom:20px;
   box-shadow:0 2px 10px rgba(0,0,0,0.3);
 }
-textarea,input{
+/* INPUTS */
+textarea,input {
   width:100%;
   padding:12px;
   background:#1a1a1a;
@@ -83,18 +88,20 @@ textarea,input{
   margin-bottom:12px;
   transition:border 0.2s;
 }
-textarea:focus,input:focus{
+textarea:focus,input:focus {
   outline:none;
   border-color:#f6851b;
 }
-.data-item{
+/* DATA FEED */
+.data-item {
   background:#1a1a1a;
   border:1px solid #2c2c2c;
   padding:14px;
   border-radius:12px;
   margin-top:10px;
 }
-.block-item{
+/* BLOCKCHAIN */
+.block-item {
   background:#1a1a1a;
   border-left:3px solid #f6851b;
   padding:12px;
@@ -102,7 +109,8 @@ textarea:focus,input:focus{
   margin-top:10px;
   font-size:12px;
 }
-#landing{
+/* LANDING */
+#landing {
   height:calc(100vh - 60px);
   display:flex;
   flex-direction:column;
@@ -110,15 +118,16 @@ textarea:focus,input:focus{
   align-items:center;
   text-align:center;
 }
-#landing h1{
+#landing h1 {
   font-size:36px;
   margin-bottom:12px;
 }
-#landing p{
+#landing p {
   font-size:18px;
   margin-bottom:20px;
 }
-#messageBox{
+/* MESSAGE */
+#messageBox {
   position:fixed;
   bottom:20px;
   right:20px;
@@ -134,15 +143,17 @@ textarea:focus,input:focus{
 <div class="topbar">
   <div class="logo">TeachAI Worker Portal</div>
   <div class="wallet-btn">
-    <button id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
+    <img id="foxLogo" src="https://cryptologos.cc/logos/metamask-metamask-logo.png?v=014" style="display:none;">
+    <span id="walletAddr"></span>
+    <span id="tibBalance"></span>
+    <button id="connectBtn" onclick="connectWallet()">Connect</button>
     <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
-    <span id="wallet"><img id="foxLogo" src="" alt="" style="display:none;"> <span id="walletAddr"></span> <span id="tibBalance"></span></span>
   </div>
 </div>
 
 <div id="landing">
   <h1>TeachAI Worker Portal</h1>
-  <p>Create AI Training Data → Build Blockchain Records 🚀</p>
+  <p>Create AI Training Data → Earn TIB Tokens 🚀</p>
   <button onclick="connectWallet()">Connect Wallet</button>
 </div>
 
@@ -158,7 +169,7 @@ textarea:focus,input:focus{
     <div class="card">
       <h3>Create Training Task</h3>
       <label>Prompt</label>
-      <textarea id="questionInput" placeholder="Write a prompt or instruction..."></textarea>
+      <textarea id="questionInput" placeholder="Write a prompt..."></textarea>
       <button onclick="generateAI()">Generate AI Response</button>
       <label>AI Response</label>
       <textarea id="aiAnswer" placeholder="AI generated response"></textarea>
@@ -189,7 +200,10 @@ let tasksCompleted = 0;
 let blockchain = [];
 
 const TIB_ADDRESS = "0xE4B954cfB2fda9AA60626B3B13E8A1Ca77C7e21d";
-const TIB_ABI = ["function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)"];
+const TIB_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function decimals() view returns (uint8)"
+];
 
 function createHash(data){ return btoa(JSON.stringify(data)).slice(0,32); }
 
@@ -202,7 +216,10 @@ function createBlock(question,corrected){
   displayBlockchain();
 }
 
-function loadBlockchain(){ let saved=JSON.parse(localStorage.getItem("teachai_chain")); if(saved){ blockchain=saved; displayBlockchain(); } }
+function loadBlockchain(){ 
+  let saved = JSON.parse(localStorage.getItem("teachai_chain")); 
+  if(saved){ blockchain = saved; displayBlockchain(); } 
+}
 
 function displayBlockchain(){
   const container = document.getElementById("blockStream");
@@ -215,15 +232,26 @@ function displayBlockchain(){
   });
 }
 
-function showMessage(text){ const box=document.getElementById("messageBox"); box.innerText=text; box.style.display="block"; setTimeout(()=>{box.style.display="none";},4000); }
+function showMessage(text){ 
+  const box=document.getElementById("messageBox"); 
+  box.innerText=text; 
+  box.style.display="block"; 
+  setTimeout(()=>{box.style.display="none";},4000); 
+}
 
 async function fetchTibBalance(addr){
-  const contract = new ethers.Contract(TIB_ADDRESS, TIB_ABI, provider);
-  const decimals = await contract.decimals();
-  const bal = await contract.balanceOf(addr);
-  const formatted = ethers.utils.formatUnits(bal, decimals);
-  document.getElementById("tibBalance").innerText = ` | TIB: ${formatted}`;
-  document.getElementById("sidebarTib").innerText = formatted;
+  try{
+    const contract = new ethers.Contract(TIB_ADDRESS, TIB_ABI, provider);
+    const decimals = await contract.decimals();
+    const bal = await contract.balanceOf(addr);
+    const formatted = ethers.utils.formatUnits(bal, decimals);
+    document.getElementById("tibBalance").innerText = ` | TIB: ${formatted}`;
+    document.getElementById("sidebarTib").innerText = formatted;
+  }catch(e){
+    console.log("Error fetching TIB balance:", e);
+    document.getElementById("tibBalance").innerText = ` | TIB: 0`;
+    document.getElementById("sidebarTib").innerText = `0`;
+  }
 }
 
 async function connectWallet(){
@@ -232,8 +260,7 @@ async function connectWallet(){
   await provider.send("eth_requestAccounts",[]);
   signer = provider.getSigner();
   const addr = await signer.getAddress();
-  document.getElementById("foxLogo").src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg";
-  document.getElementById("foxLogo").style.display="inline";
+  document.getElementById("foxLogo").style.display="inline-block";
   document.getElementById("walletAddr").innerText = addr.slice(0,6)+"..."+addr.slice(-4);
   document.getElementById("walletInfo").innerText = `Wallet: ${addr.slice(0,6)}...${addr.slice(-4)}`;
   document.getElementById("landing").style.display="none";
@@ -243,7 +270,8 @@ async function connectWallet(){
   fetchTibBalance(addr);
 }
 
-function logout(){ signer=null; provider=null;
+function logout(){ 
+  signer=null; provider=null;
   document.getElementById("dashboard").style.display="none";
   document.getElementById("landing").style.display="flex";
   document.getElementById("connectBtn").style.display="inline-block";
