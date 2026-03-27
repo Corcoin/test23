@@ -272,193 +272,104 @@ Submit Work
 </div>
 
 <script>
-
 /* GLOBAL STATE */
-
 let balance = 0;
 let tasksCompleted = 0;
-
 let provider;
 let signer;
 
 /* CONNECT WALLET */
-
 async function connectWallet() {
+  try {
+    if (!window.ethereum) {
+      alert("MetaMask not detected.");
+      return;
+    }
 
-try {
+    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
 
-if (!window.ethereum) {
+    const address = await signer.getAddress();
+    document.getElementById("wallet").innerText =
+      "Connected: " + address.slice(0, 6) + "..." + address.slice(-4);
 
-alert("MetaMask not detected.");
-return;
-
-}
-
-provider =
-new ethers.providers.Web3Provider(
-window.ethereum,
-"any"
-);
-
-await provider.send(
-"eth_requestAccounts",
-[]
-);
-
-signer = provider.getSigner();
-
-const address =
-await signer.getAddress();
-
-document.getElementById("wallet")
-.innerText =
-"Connected: " +
-address.slice(0,6) +
-"..." +
-address.slice(-4);
-
-document.getElementById("dashboard")
-.style.display = "block";
-
-console.log("Wallet connected:", address);
-
-}
-catch (err) {
-
-console.error(err);
-
-alert("Wallet connection failed.");
-
-}
-
+    document.getElementById("dashboard").style.display = "block";
+    console.log("Wallet connected:", address);
+  } catch (err) {
+    console.error(err);
+    alert("Wallet connection failed.");
+  }
 }
 
 /* FAKE AI GENERATOR */
-
 function generateAI() {
+  let question = document.getElementById("questionInput").value.trim();
+  if (question.length < 3) {
+    alert("Enter a question first");
+    return;
+  }
 
-let question =
-document.getElementById("questionInput").value.trim();
+  const responses = [
+    "Based on the input, this appears logically correct.",
+    "The correct result depends on additional variables.",
+    "This solution may vary depending on context.",
+    "The output was generated using learned patterns.",
+    "The result is estimated from previous examples."
+  ];
 
-if (question.length < 3) {
-
-alert("Enter a question first");
-return;
-
+  const aiResponse = responses[Math.floor(Math.random() * responses.length)];
+  document.getElementById("aiAnswer").value = aiResponse;
 }
 
-let responses = [
-
-"Based on the input, this appears logically correct.",
-"The correct result depends on additional variables.",
-"This solution may vary depending on context.",
-"The output was generated using learned patterns.",
-"The result is estimated from previous examples."
-
-];
-
-let aiResponse =
-responses[
-Math.floor(Math.random() * responses.length)
-];
-
-document.getElementById("aiAnswer")
-.value = aiResponse;
-
-}
-
-/* SUBMIT WORK */
-
+/* SUBMIT WORK WITH REAL TRANSACTION */
 async function submitWork() {
+  if (!signer) {
+    alert("Connect wallet first.");
+    return;
+  }
 
-if (!signer) {
+  let question = document.getElementById("questionInput").value.trim();
+  let aiAnswer = document.getElementById("aiAnswer").value.trim();
+  let rating = document.getElementById("rating").value;
+  let corrected = document.getElementById("correctedAnswer").value.trim();
 
-alert("Connect wallet first.");
-return;
+  if (!question || !aiAnswer || !rating || !corrected) {
+    alert("Complete all fields");
+    return;
+  }
 
+  // --- REWARD & UI ---
+  let reward = parseInt(rating);
+  balance += reward;
+  tasksCompleted++;
+  document.getElementById("balance").innerText = "TRB Balance: " + balance.toFixed(2);
+  document.getElementById("taskCount").innerText = tasksCompleted;
+
+  // --- CREATE TRANSACTION ---
+  const taskData = JSON.stringify({ question, aiAnswer, rating, corrected, time: Date.now() });
+
+  const tx = {
+    to: await signer.getAddress(),              // Send to self
+    value: ethers.utils.parseEther("0.000001"),// Tiny Polygon value
+    data: ethers.utils.toUtf8Bytes(taskData)   // Embed task JSON
+  };
+
+  try {
+    const sentTx = await signer.sendTransaction(tx);
+    await sentTx.wait(); // Wait for confirmation
+    alert("Work Submitted & Logged On Blockchain!\nTx Hash: " + sentTx.hash);
+  } catch (err) {
+    console.error(err);
+    alert("Transaction failed or rejected");
+  }
+
+  // --- RESET TASK ---
+  document.getElementById("questionInput").value = "";
+  document.getElementById("aiAnswer").value = "";
+  document.getElementById("rating").value = "";
+  document.getElementById("correctedAnswer").value = "";
 }
-
-let question =
-document.getElementById("questionInput").value.trim();
-
-let aiAnswer =
-document.getElementById("aiAnswer").value.trim();
-
-let rating =
-document.getElementById("rating").value;
-
-let corrected =
-document.getElementById("correctedAnswer").value.trim();
-
-if (
-!question ||
-!aiAnswer ||
-!rating ||
-!corrected
-) {
-
-alert("Complete all fields");
-return;
-
-}
-
-/* REWARD */
-
-let reward =
-parseInt(rating);
-
-balance += reward;
-
-tasksCompleted++;
-
-document.getElementById("balance")
-.innerText =
-"TRB Balance: " +
-balance.toFixed(2);
-
-document.getElementById("taskCount")
-.innerText =
-tasksCompleted;
-
-/* BLOCKCHAIN SIGN */
-
-let message =
-JSON.stringify({
-
-question,
-aiAnswer,
-rating,
-corrected,
-time: Date.now()
-
-});
-
-try {
-
-await signer.signMessage(message);
-
-alert(
-"Work Submitted & Signed"
-);
-
-}
-catch (err) {
-
-console.log(err);
-
-alert("Signature cancelled");
-
-}
-
-/* RESET TASK */
-
-document.getElementById("questionInput").value = "";
-document.getElementById("aiAnswer").value = "";
-document.getElementById("rating").value = "";
-document.getElementById("correctedAnswer").value = "";
-
-}
-
 </script>
 
 </body>
