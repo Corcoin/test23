@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TeachAI Worker Portal</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #4CAF50;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .task {
+      background: #222;
+      padding: 15px;
+      margin: 10px;
+      border-radius: 8px;
+    }
+
+    input {
+      padding: 8px;
+      margin-top: 10px;
+      width: 300px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+<h1>TeachAI Worker Portal</h1>
+
+<p>Connect Wallet to Start Working</p>
+
+<button onclick="connectWallet()">
+  Enter With MetaMask
+</button>
+
+<p id="wallet"></p>
+
+<div id="dashboard" style="display:none;">
+
+<h2>Today's Work Tasks</h2>
+
+<div class="task">
+  Review Logic Pattern  
+  Reward: 5 TRB  
+  <br><br>
+  <button onclick="completeTask(5)">
+    Complete Task
+  </button>
+</div>
+
+<div class="task">
+  Rate Training Response  
+  Reward: 4 TRB  
+  <br><br>
+  <button onclick="completeTask(4)">
+    Complete Task
+  </button>
+</div>
+
+<div class="task">
+  Solve Micro Logic Test  
+  Reward: 3 TRB  
+  <br><br>
+  <button onclick="completeTask(3)">
+    Complete Task
+  </button>
+</div>
+
+<h3>Your Balance</h3>
+
+<p id="balance">
+TRB Balance: 0
+</p>
+
+<h3>Factory Address Signup (First 100 Workers)</h3>
+
+<input
+  type="text"
+  id="addressBox"
+  placeholder="Enter Shipping Address"
+/>
+
+<br>
+
+<button onclick="saveAddress()">
+Submit Address
+</button>
+
+</div>
+
+<script>
+
+let balance = 0;
+
+async function connectWallet() {
+
+  if (typeof window.ethereum !== 'undefined') {
+
+    const accounts = await ethereum.request({
+      method: 'eth_requestAccounts'
+    });
+
+    document.getElementById("wallet").innerText =
+      "Connected Wallet: " + accounts[0];
+
+    document.getElementById("dashboard").style.display = "block";
+
+  } else {
+
+    alert("Install MetaMask first!");
+
+  }
+
+}
+
+function completeTask(reward) {
+
+  let rating = Math.floor(Math.random() * 5) + 1;
+
+  let earned = reward * (rating / 5);
+
+  balance += earned;
+
+  document.getElementById("balance").innerText =
+    "TRB Balance: " + balance.toFixed(2);
+
+  alert(
+    "Task Completed!\n" +
+    "Rating: " + rating +
+    "\nEarned: " + earned.toFixed(2) + " TRB"
+  );
+
+}
+
+function saveAddress() {
+
+  let addr =
+    document.getElementById("addressBox").value;
+
+  if (addr.length > 5) {
+
+    alert("Address Saved!");
+
+  } else {
+
+    alert("Enter valid address");
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
