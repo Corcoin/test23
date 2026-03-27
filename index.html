@@ -4,16 +4,13 @@
 <meta charset="UTF-8">
 <title>TeachAI Worker Portal</title>
 <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
 <style>
-/* GLOBAL */
 body{
   font-family:'Inter',sans-serif;
   background:#121212;
   color:#e5e7eb;
   margin:0;
 }
-/* TOPBAR */
 .topbar{
   background:#1f1f1f;
   border-bottom:1px solid #2c2c2c;
@@ -33,11 +30,9 @@ body{
   gap:8px;
 }
 .wallet-btn img{
-  width:24px;
-  height:24px;
-  border-radius:50%;
+  width:28px;
+  height:28px;
 }
-/* BUTTON */
 button{
   background:linear-gradient(90deg,#f6851b,#ff9d42);
   border:none;
@@ -51,7 +46,6 @@ button{
 button:hover{
   transform:scale(1.05);
 }
-/* LAYOUT */
 .container{
   display:none;
   height:calc(100vh - 60px);
@@ -69,7 +63,6 @@ button:hover{
   overflow:auto;
   background:#121212;
 }
-/* CARDS */
 .card{
   background:#1f1f1f;
   border:1px solid #2c2c2c;
@@ -78,7 +71,6 @@ button:hover{
   margin-bottom:20px;
   box-shadow:0 2px 10px rgba(0,0,0,0.3);
 }
-/* INPUTS */
 textarea,input{
   width:100%;
   padding:12px;
@@ -95,7 +87,6 @@ textarea:focus,input:focus{
   outline:none;
   border-color:#f6851b;
 }
-/* DATA FEED */
 .data-item{
   background:#1a1a1a;
   border:1px solid #2c2c2c;
@@ -103,7 +94,6 @@ textarea:focus,input:focus{
   border-radius:12px;
   margin-top:10px;
 }
-/* BLOCKCHAIN */
 .block-item{
   background:#1a1a1a;
   border-left:3px solid #f6851b;
@@ -112,7 +102,6 @@ textarea:focus,input:focus{
   margin-top:10px;
   font-size:12px;
 }
-/* LANDING */
 #landing{
   height:calc(100vh - 60px);
   display:flex;
@@ -129,7 +118,6 @@ textarea:focus,input:focus{
   font-size:18px;
   margin-bottom:20px;
 }
-/* MESSAGE */
 #messageBox{
   position:fixed;
   bottom:20px;
@@ -143,68 +131,53 @@ textarea:focus,input:focus{
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="logo">TeachAI Worker Portal</div>
   <div class="wallet-btn">
     <button id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
     <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
-    <span id="wallet"></span>
+    <span id="wallet"><img id="foxLogo" src="" alt="" style="display:none;"> <span id="walletAddr"></span> <span id="tibBalance"></span></span>
   </div>
 </div>
 
-<!-- LANDING -->
 <div id="landing">
   <h1>TeachAI Worker Portal</h1>
   <p>Create AI Training Data → Build Blockchain Records 🚀</p>
   <button onclick="connectWallet()">Connect Wallet</button>
 </div>
 
-<!-- DASHBOARD -->
 <div class="container" id="dashboard">
-
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <h3>Wallet Info</h3>
     <p id="walletInfo"></p>
+    <p>TIB Balance: <span id="sidebarTib">0</span></p>
     <p>Tasks Completed: <span id="taskCount">0</span></p>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
-
-    <!-- TASK CARD -->
     <div class="card">
       <h3>Create Training Task</h3>
       <label>Prompt</label>
       <textarea id="questionInput" placeholder="Write a prompt or instruction..."></textarea>
-
       <button onclick="generateAI()">Generate AI Response</button>
-
       <label>AI Response</label>
       <textarea id="aiAnswer" placeholder="AI generated response"></textarea>
-
       <label>Correct / Improve Response</label>
       <textarea id="correctedAnswer" placeholder="Improve the response..."></textarea>
-
       <label>Rate AI (1–5)</label>
       <input type="number" min="1" max="5" id="ratingInput" placeholder="Rating"/>
-
       <button onclick="submitWork()">Submit Task</button>
     </div>
 
-    <!-- DATA FEED -->
     <div class="card">
       <h3>Your Submitted Data</h3>
       <div id="dataList"></div>
     </div>
 
-    <!-- BLOCKCHAIN STREAM -->
     <div class="card">
       <h3>Live Blockchain Data Stream</h3>
       <div id="blockStream"></div>
     </div>
-
   </div>
 </div>
 
@@ -215,67 +188,61 @@ let provider, signer;
 let tasksCompleted = 0;
 let blockchain = [];
 
-// HASH
+const TIB_ADDRESS = "0xE4B954cfB2fda9AA60626B3B13E8A1Ca77C7e21d";
+const TIB_ABI = ["function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)"];
+
 function createHash(data){ return btoa(JSON.stringify(data)).slice(0,32); }
 
-// CREATE BLOCK
 function createBlock(question,corrected){
   const prevHash = blockchain.length>0 ? blockchain[blockchain.length-1].hash : "GENESIS";
-  const block = {
-    index: blockchain.length+1,
-    timestamp: new Date().toLocaleTimeString(),
-    question, corrected,
-    previousHash: prevHash
-  };
+  const block = { index:blockchain.length+1, timestamp:new Date().toLocaleTimeString(), question, corrected, previousHash: prevHash };
   block.hash = createHash(block);
   blockchain.push(block);
   localStorage.setItem("teachai_chain",JSON.stringify(blockchain));
   displayBlockchain();
 }
 
-// LOAD BLOCKCHAIN
-function loadBlockchain(){
-  let saved = JSON.parse(localStorage.getItem("teachai_chain"));
-  if(saved){ blockchain = saved; displayBlockchain(); }
-}
+function loadBlockchain(){ let saved=JSON.parse(localStorage.getItem("teachai_chain")); if(saved){ blockchain=saved; displayBlockchain(); } }
 
-// DISPLAY BLOCKCHAIN
 function displayBlockchain(){
   const container = document.getElementById("blockStream");
   container.innerHTML="";
-  let lastBlocks = blockchain.slice(-5).reverse();
-  lastBlocks.forEach(block=>{
-    const div = document.createElement("div");
+  blockchain.slice(-5).reverse().forEach(block=>{
+    const div=document.createElement("div");
     div.className="block-item";
-    div.innerHTML = `<b>Block #${block.index}</b><br>Time: ${block.timestamp}<br>Q: ${block.question}<br>Corrected: ${block.corrected}<br>Prev: ${block.previousHash}`;
+    div.innerHTML=`<b>Block #${block.index}</b><br>Time: ${block.timestamp}<br>Q: ${block.question}<br>Corrected: ${block.corrected}<br>Prev: ${block.previousHash}`;
     container.appendChild(div);
   });
 }
 
-// MESSAGE
-function showMessage(text){
-  const box=document.getElementById("messageBox");
-  box.innerText=text;
-  box.style.display="block";
-  setTimeout(()=>{box.style.display="none";},4000);
+function showMessage(text){ const box=document.getElementById("messageBox"); box.innerText=text; box.style.display="block"; setTimeout(()=>{box.style.display="none";},4000); }
+
+async function fetchTibBalance(addr){
+  const contract = new ethers.Contract(TIB_ADDRESS, TIB_ABI, provider);
+  const decimals = await contract.decimals();
+  const bal = await contract.balanceOf(addr);
+  const formatted = ethers.utils.formatUnits(bal, decimals);
+  document.getElementById("tibBalance").innerText = ` | TIB: ${formatted}`;
+  document.getElementById("sidebarTib").innerText = formatted;
 }
 
-// CONNECT WALLET
 async function connectWallet(){
   if(!window.ethereum){ alert("Install MetaMask"); return; }
   provider = new ethers.providers.Web3Provider(window.ethereum);
   await provider.send("eth_requestAccounts",[]);
   signer = provider.getSigner();
   const addr = await signer.getAddress();
-  document.getElementById("wallet").innerHTML = `<img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg"> ${addr.slice(0,6)}...${addr.slice(-4)}`;
-  document.getElementById("walletInfo").innerText = `Wallet: ${addr}`;
+  document.getElementById("foxLogo").src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg";
+  document.getElementById("foxLogo").style.display="inline";
+  document.getElementById("walletAddr").innerText = addr.slice(0,6)+"..."+addr.slice(-4);
+  document.getElementById("walletInfo").innerText = `Wallet: ${addr.slice(0,6)}...${addr.slice(-4)}`;
   document.getElementById("landing").style.display="none";
   document.getElementById("dashboard").style.display="flex";
   document.getElementById("connectBtn").style.display="none";
   document.getElementById("logoutBtn").style.display="inline-block";
+  fetchTibBalance(addr);
 }
 
-// LOGOUT
 function logout(){ signer=null; provider=null;
   document.getElementById("dashboard").style.display="none";
   document.getElementById("landing").style.display="flex";
@@ -283,13 +250,11 @@ function logout(){ signer=null; provider=null;
   document.getElementById("logoutBtn").style.display="none";
 }
 
-// AI GENERATOR
 function generateAI(){
   const responses=["Pattern detected","Estimated output","Generated logic","Context result","Training-based answer"];
   document.getElementById("aiAnswer").value=responses[Math.floor(Math.random()*responses.length)];
 }
 
-// SAVE DATA
 function saveData(question,corrected,rating){
   const data={question,corrected,rating,date:new Date().toLocaleString()};
   let list = JSON.parse(localStorage.getItem("workerData"))||[];
@@ -298,7 +263,6 @@ function saveData(question,corrected,rating){
   displayData();
 }
 
-// DISPLAY DATA
 function displayData(){
   let list = JSON.parse(localStorage.getItem("workerData"))||[];
   const container=document.getElementById("dataList");
@@ -311,7 +275,6 @@ function displayData(){
   });
 }
 
-// SUBMIT TASK
 async function submitWork(){
   if(!signer){ alert("Connect wallet first"); return; }
   const q=document.getElementById("questionInput").value.trim();
@@ -319,34 +282,18 @@ async function submitWork(){
   const c=document.getElementById("correctedAnswer").value.trim();
   const r=document.getElementById("ratingInput").value.trim();
   if(!q||!a||!c||!r){ alert("Complete all fields"); return; }
-
   createBlock(q,c);
   saveData(q,c,r);
   tasksCompleted++;
   document.getElementById("taskCount").innerText = tasksCompleted;
-
-  // send to backend for TIB reward
-  try{
-    const addr = await signer.getAddress();
-    await fetch("https://YOUR_BACKEND_URL/api/reward",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({workerAddress: addr, task:{question:q,corrected:c,rating:r}})
-    });
-    showMessage("✅ Task submitted! Reward will be sent");
-  }catch(e){
-    console.log(e);
-    showMessage("⚠ Failed to send task to backend");
-  }
-
-  // CLEAR
+  fetchTibBalance(await signer.getAddress());
+  showMessage("✅ Task submitted! TIB updated");
   document.getElementById("questionInput").value="";
   document.getElementById("aiAnswer").value="";
   document.getElementById("correctedAnswer").value="";
   document.getElementById("ratingInput").value="";
 }
 
-// INIT
 displayData();
 loadBlockchain();
 </script>
