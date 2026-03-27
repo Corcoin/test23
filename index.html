@@ -52,13 +52,6 @@ body {
   border-right: 1px solid #333;
 }
 
-.menu-item {
-  padding: 10px;
-  background: #222;
-  margin-bottom: 10px;
-  border-radius: 6px;
-}
-
 /* MAIN */
 
 .main {
@@ -67,41 +60,33 @@ body {
   overflow-y: auto;
 }
 
-/* TASK AREA */
+/* TASK BOX */
 
-.task-area {
+.task-box {
   background: #222;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
 }
 
-/* OPTIONS */
-
-.option {
-  display: block;
-  margin: 8px 0;
-}
-
-/* FACTORY */
-
-.factory-box {
-  background: #1f1f1f;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.job-card {
-  background: #222;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-}
-
-input {
-  padding: 10px;
-  width: 300px;
+textarea {
+  width: 100%;
+  height: 80px;
   margin-top: 10px;
+  padding: 10px;
+}
+
+select {
+  padding: 10px;
+  margin-top: 10px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background: #4CAF50;
+  border: none;
+  color: white;
 }
 
 </style>
@@ -122,19 +107,9 @@ Enter With MetaMask
 
 <div class="container">
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
 
 <h3>Worker Panel</h3>
-
-<div class="menu-item">
-AI Micro Work
-</div>
-
-<div class="menu-item">
-Factory Jobs
-</div>
 
 <h3>Your Balance</h3>
 
@@ -142,78 +117,58 @@ Factory Jobs
 TRB Balance: 0
 </p>
 
-</div>
+<p>
+Tasks Completed:
+<span id="taskCount">0</span>
+</p>
 
-<!-- MAIN -->
+</div>
 
 <div class="main" id="dashboard" style="display:none;">
 
-<h2>AI Micro Work Task</h2>
+<h2>AI Training Micro Work</h2>
 
-<div class="task-area">
+<div class="task-box">
 
-<p id="taskQuestion">
-Loading task...
-</p>
+<label>Ask AI a Question:</label>
 
-<div id="taskOptions"></div>
+<textarea id="questionInput"
+placeholder="Type a question for AI...">
+</textarea>
 
-<br>
+<button onclick="generateAI()">
+Generate AI Answer
+</button>
 
-<button onclick="submitTask()">
+<br><br>
+
+<label>AI Answer:</label>
+
+<textarea id="aiAnswer"
+placeholder="AI answer will appear here">
+</textarea>
+
+<label>Rate AI Answer (1–5)</label>
+
+<select id="rating">
+
+<option value="">Select Rating</option>
+<option value="1">1 - Poor</option>
+<option value="2">2 - Fair</option>
+<option value="3">3 - Good</option>
+<option value="4">4 - Very Good</option>
+<option value="5">5 - Perfect</option>
+
+</select>
+
+<label>Correct AI Answer:</label>
+
+<textarea id="correctedAnswer"
+placeholder="Fix the AI answer if needed">
+</textarea>
+
+<button onclick="submitWork()">
 Submit Work
-</button>
-
-</div>
-
-<!-- FACTORY JOBS -->
-
-<div class="factory-box">
-
-<h2>Factory Job Board</h2>
-
-<div class="job-card">
-
-<strong>Packaging Workers</strong>
-
-<p>
-Slots Remaining: 
-<span id="slots1">100</span>
-</p>
-
-<button onclick="claimJob(1)">
-Claim Slot
-</button>
-
-</div>
-
-<div class="job-card">
-
-<strong>Assembly Workers</strong>
-
-<p>
-Slots Remaining: 
-<span id="slots2">50</span>
-</p>
-
-<button onclick="claimJob(2)">
-Claim Slot
-</button>
-
-</div>
-
-<h3>Enter Shipping Address</h3>
-
-<input
-type="text"
-id="addressBox"
-placeholder="Enter Shipping Address"
-/>
-
-<br>
-
-<button onclick="saveAddress()">
-Submit Address
 </button>
 
 </div>
@@ -224,25 +179,37 @@ Submit Address
 
 <script>
 
-/* WALLET */
+/* STATE */
 
 let balance = 0;
+let tasksCompleted = 0;
+let signer;
+
+/* CONNECT WALLET */
 
 async function connectWallet() {
 
 if (typeof window.ethereum !== 'undefined') {
 
-const accounts =
-await ethereum.request({
-method: 'eth_requestAccounts'
-});
+const provider =
+new ethers.providers.Web3Provider(window.ethereum);
 
-document.getElementById("wallet").innerText =
-"Connected: " + accounts[0];
+await provider.send(
+"eth_requestAccounts",
+[]
+);
 
-document.getElementById("dashboard").style.display = "block";
+signer = provider.getSigner();
 
-loadTask();
+let address =
+await signer.getAddress();
+
+document.getElementById("wallet")
+.innerText =
+"Connected: " + address;
+
+document.getElementById("dashboard")
+.style.display = "block";
 
 } else {
 
@@ -252,187 +219,122 @@ alert("MetaMask not detected.");
 
 }
 
-/* TASK SYSTEM */
+/* FAKE AI GENERATOR */
 
-let currentTask = null;
+function generateAI() {
 
-let tasks = [
+let question =
+document.getElementById("questionInput").value;
 
-{
-question:
-"If A > B and B > C, which is greatest?",
-options:
-["A","B","C"],
-correct:
-"A",
-reward:
-5
-},
+if (question.length < 3) {
 
-{
-question:
-"What is 2 + 2?",
-options:
-["3","4","5"],
-correct:
-"4",
-reward:
-3
-},
-
-{
-question:
-"Which is a fruit?",
-options:
-["Car","Apple","Rock"],
-correct:
-"Apple",
-reward:
-4
-},
-
-{
-question:
-"What color is the sky?",
-options:
-["Blue","Green","Orange"],
-correct:
-"Blue",
-reward:
-2
-}
-
-];
-
-function loadTask() {
-
-currentTask =
-tasks[Math.floor(Math.random() * tasks.length)];
-
-document.getElementById("taskQuestion")
-.innerText =
-currentTask.question;
-
-let optionsHTML = "";
-
-for (let i = 0; i < currentTask.options.length; i++) {
-
-optionsHTML +=
-'<label class="option">' +
-'<input type="radio" name="taskOption" value="' +
-currentTask.options[i] +
-'"> ' +
-currentTask.options[i] +
-'</label>';
-
-}
-
-document.getElementById("taskOptions")
-.innerHTML = optionsHTML;
-
-}
-
-/* SUBMIT TASK */
-
-function submitTask() {
-
-let answers =
-document.getElementsByName("taskOption");
-
-let selected = "";
-
-for (let i = 0; i < answers.length; i++) {
-
-if (answers[i].checked) {
-
-selected = answers[i].value;
-
-}
-
-}
-
-if (selected == "") {
-
-alert("Select an answer");
+alert("Enter a question");
 
 return;
 
 }
 
-if (selected == currentTask.correct) {
+/* Fake AI logic */
 
-balance += currentTask.reward;
+let responses = [
+
+"This appears to be correct based on logic.",
+"The answer depends on additional context.",
+"A possible solution is calculated mathematically.",
+"This result may vary depending on input.",
+"The response is generated based on pattern learning."
+
+];
+
+let aiResponse =
+responses[
+Math.floor(
+Math.random() * responses.length
+)
+];
+
+document.getElementById("aiAnswer")
+.value = aiResponse;
+
+}
+
+/* SUBMIT WORK */
+
+async function submitWork() {
+
+let question =
+document.getElementById("questionInput").value;
+
+let aiAnswer =
+document.getElementById("aiAnswer").value;
+
+let rating =
+document.getElementById("rating").value;
+
+let corrected =
+document.getElementById("correctedAnswer").value;
+
+if (
+question == "" ||
+aiAnswer == "" ||
+rating == "" ||
+corrected == ""
+) {
+
+alert("Complete all fields");
+
+return;
+
+}
+
+/* Earn Reward */
+
+let reward = parseInt(rating);
+
+balance += reward;
+
+tasksCompleted++;
 
 document.getElementById("balance")
 .innerText =
 "TRB Balance: " +
 balance.toFixed(2);
 
+document.getElementById("taskCount")
+.innerText =
+tasksCompleted;
+
+/* Save Proof On Blockchain */
+
+let message =
+JSON.stringify({
+question: question,
+aiAnswer: aiAnswer,
+rating: rating,
+corrected: corrected,
+time: Date.now()
+});
+
+try {
+
+await signer.signMessage(message);
+
 alert(
-"Correct — Earned " +
-currentTask.reward +
-" TRB"
+"Work Submitted & Logged On Blockchain"
 );
 
-loadTask();
+} catch (err) {
 
-} else {
-
-alert("Incorrect — try next task");
-
-loadTask();
+alert("Signature cancelled");
 
 }
 
-}
+/* RESET TASK */
 
-/* FACTORY */
-
-let slots1 = 100;
-let slots2 = 50;
-
-function claimJob(job) {
-
-if (job == 1 && slots1 > 0) {
-
-slots1--;
-
-document.getElementById("slots1")
-.innerText = slots1;
-
-alert("Packaging Job Reserved");
-
-}
-
-if (job == 2 && slots2 > 0) {
-
-slots2--;
-
-document.getElementById("slots2")
-.innerText = slots2;
-
-alert("Assembly Job Reserved");
-
-}
-
-}
-
-/* ADDRESS */
-
-function saveAddress() {
-
-let addr =
-document.getElementById("addressBox").value;
-
-if (addr.length > 5) {
-
-alert("Address Submitted");
-
-} else {
-
-alert("Enter valid address");
-
-}
+document.getElementById("questionInput").value = "";
+document.getElementById("aiAnswer").value = "";
+document.getElementById("rating").value = "";
+document.getElementById("correctedAnswer").value = "";
 
 }
 
