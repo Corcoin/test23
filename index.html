@@ -14,12 +14,14 @@ body {
   margin: 0;
 }
 
-/* Top Bar */
+/* TOP BAR */
 
 .topbar {
   background: #1a1a1a;
   padding: 15px;
   border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
 }
 
 .topbar button {
@@ -30,38 +32,55 @@ body {
   cursor: pointer;
 }
 
-/* Layout */
+#wallet {
+  margin-left: 20px;
+}
+
+/* LAYOUT */
 
 .container {
   display: flex;
+  height: 100vh;
 }
 
-/* Sidebar */
+/* SIDEBAR */
 
 .sidebar {
-  width: 220px;
+  width: 240px;
   background: #181818;
   padding: 20px;
   border-right: 1px solid #333;
 }
 
-.sidebar h3 {
-  margin-top: 0;
+.menu-item {
+  padding: 10px;
+  background: #222;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-/* Main Area */
+/* MAIN */
 
 .main {
   flex: 1;
   padding: 20px;
+  overflow-y: auto;
 }
 
-/* Task Boxes */
+/* GRID */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+/* TASK BOX */
 
 .task-box {
   background: #222;
   padding: 15px;
-  margin-bottom: 15px;
   border-radius: 8px;
 }
 
@@ -70,19 +89,28 @@ body {
   padding: 8px 12px;
 }
 
-/* Factory Jobs */
+/* FACTORY */
 
 .factory-box {
   background: #1f1f1f;
-  padding: 15px;
-  margin-top: 20px;
+  padding: 20px;
   border-radius: 8px;
+  margin-top: 30px;
 }
 
-/* Address Input */
+/* JOB CARD */
+
+.job-card {
+  background: #222;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+/* INPUT */
 
 input {
-  padding: 8px;
+  padding: 10px;
   width: 300px;
   margin-top: 10px;
 }
@@ -93,15 +121,13 @@ input {
 
 <body>
 
-<!-- TOP BAR -->
-
 <div class="topbar">
 
 <button onclick="connectWallet()">
 Enter With MetaMask
 </button>
 
-<span id="wallet" style="margin-left:20px;"></span>
+<span id="wallet"></span>
 
 </div>
 
@@ -111,11 +137,19 @@ Enter With MetaMask
 
 <div class="sidebar">
 
-<h3>Worker Menu</h3>
+<h3>Worker Panel</h3>
 
-<p>AI Training</p>
-<p>Factory Jobs</p>
-<p>Balance</p>
+<div class="menu-item">
+AI Micro Tasks
+</div>
+
+<div class="menu-item">
+Factory Jobs
+</div>
+
+<div class="menu-item">
+Wallet Balance
+</div>
 
 <h3>Your Balance</h3>
 
@@ -125,75 +159,101 @@ TRB Balance: 0
 
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 
 <div class="main" id="dashboard" style="display:none;">
 
-<h2>AI Training Tasks</h2>
+<h2>AI Training Micro Processes</h2>
 
-<!-- AI TRAINING BOXES -->
+<div class="grid">
 
 <div class="task-box">
-
-<strong>Micro Process: Logic Pattern</strong>
-
-<p>
-Rate the logic response accuracy.
-</p>
+<strong>Logic Training</strong>
+<p>Rate output accuracy</p>
 
 <button onclick="completeTask(5)">
-Complete Task — Reward 5 TRB
+Earn 5 TRB
 </button>
-
 </div>
 
 <div class="task-box">
-
-<strong>Micro Process: Response Training</strong>
-
-<p>
-Evaluate AI response quality.
-</p>
+<strong>Response Matching</strong>
+<p>Match correct answers</p>
 
 <button onclick="completeTask(4)">
-Complete Task — Reward 4 TRB
+Earn 4 TRB
 </button>
-
 </div>
 
 <div class="task-box">
-
-<strong>Micro Process: Pattern Match</strong>
-
-<p>
-Match correct logic outputs.
-</p>
+<strong>Pattern Labeling</strong>
+<p>Label logic patterns</p>
 
 <button onclick="completeTask(3)">
-Complete Task — Reward 3 TRB
+Earn 3 TRB
 </button>
+</div>
+
+<div class="task-box">
+<strong>Data Sorting</strong>
+<p>Sort training data</p>
+
+<button onclick="completeTask(2)">
+Earn 2 TRB
+</button>
+</div>
+
+<div class="task-box">
+<strong>Error Detection</strong>
+<p>Find bad outputs</p>
+
+<button onclick="completeTask(6)">
+Earn 6 TRB
+</button>
+</div>
+
+<div class="task-box">
+<strong>Micro Review</strong>
+<p>Quick validation task</p>
+
+<button onclick="completeTask(3)">
+Earn 3 TRB
+</button>
+</div>
 
 </div>
 
-<!-- FACTORY JOB SECTION -->
+<!-- FACTORY JOBS -->
 
 <div class="factory-box">
 
-<h2>Factory Job Listings</h2>
+<h2>Factory Job Board</h2>
+
+<div class="job-card">
+
+<strong>Packaging Workers</strong>
 
 <p>
-Job: Packaging Team — Need 100 Workers  
+Need: 100 Workers  
 Reward: TRB per shipment  
 Status: OPEN
 </p>
 
+</div>
+
+<div class="job-card">
+
+<strong>Assembly Workers</strong>
+
 <p>
-Job: Assembly Kit Workers — Need 50 Workers  
-Reward: TRB per completed unit  
+Need: 50 Workers  
+Reward: TRB per unit  
 Status: COMING SOON
 </p>
 
-<h3>Enter Address to Apply</h3>
+</div>
+
+<h3>Apply For Factory Work</h3>
 
 <input
 type="text"
@@ -204,7 +264,7 @@ placeholder="Enter Shipping Address"
 <br>
 
 <button onclick="saveAddress()">
-Apply For Factory Work
+Submit Application
 </button>
 
 </div>
@@ -216,8 +276,6 @@ Apply For Factory Work
 <script>
 
 let balance = 0;
-
-/* MetaMask Connect */
 
 async function connectWallet() {
 
@@ -240,8 +298,6 @@ alert("MetaMask not detected.");
 }
 
 }
-
-/* Complete AI Task */
 
 function completeTask(reward) {
 
@@ -266,8 +322,6 @@ earned.toFixed(2) +
 );
 
 }
-
-/* Save Factory Address */
 
 function saveAddress() {
 
