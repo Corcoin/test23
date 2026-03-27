@@ -33,6 +33,13 @@ align-items:center;
 font-weight:bold;
 font-size:18px;
 color:#f6851b;
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+.logo img{
+width:32px;
 }
 
 /* BUTTON */
@@ -62,30 +69,24 @@ opacity:.9;
 .container{
 display:none;
 height:calc(100vh - 60px);
-display:flex;
 }
 
 .sidebar{
 
 width:260px;
-
 background:#111827;
-
 border-right:1px solid #1f2937;
-
 padding:20px;
+float:left;
+height:100%;
 
 }
 
 .main{
 
-flex:1;
-
+margin-left:260px;
 padding:25px;
-
 overflow:auto;
-
-background:#0b0f19;
 
 }
 
@@ -94,17 +95,10 @@ background:#0b0f19;
 .card{
 
 background:#111827;
-
 border:1px solid #1f2937;
-
 border-radius:16px;
-
 padding:20px;
-
 margin-bottom:20px;
-
-box-shadow:
-0 0 0 1px rgba(255,255,255,0.02);
 
 }
 
@@ -114,21 +108,13 @@ textarea,
 input{
 
 width:100%;
-
 padding:12px;
-
 background:#020617;
-
 border:1px solid #1f2937;
-
 border-radius:12px;
-
 color:white;
-
 font-size:14px;
-
 margin-top:8px;
-
 margin-bottom:12px;
 
 }
@@ -137,41 +123,31 @@ textarea:focus,
 input:focus{
 
 outline:none;
-
 border-color:#f6851b;
 
 }
 
-/* DATA FEED */
+/* DATA */
 
 .data-item{
 
 background:#020617;
-
 border:1px solid #1f2937;
-
 padding:14px;
-
 border-radius:12px;
-
 margin-top:10px;
 
 }
 
-/* BLOCKCHAIN */
+/* BLOCK */
 
 .block-item{
 
 background:#020617;
-
 border-left:3px solid #f6851b;
-
 padding:12px;
-
 border-radius:10px;
-
 margin-top:10px;
-
 font-size:12px;
 
 }
@@ -225,7 +201,11 @@ display:none;
 <div class="topbar">
 
 <div class="logo">
-TeachAI Worker Portal
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg">
+
+TeachAI Portal
+
 </div>
 
 <div>
@@ -258,7 +238,7 @@ Logout
 <h1>TeachAI Worker Portal</h1>
 
 <p>
-Create AI Training Data → Build Blockchain Records 🚀
+Create Data → Sign Task → Build Chain 🦊
 </p>
 
 <button onclick="connectWallet()">
@@ -271,13 +251,9 @@ Connect Wallet
 
 <div class="container" id="dashboard">
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
 
-<h3>Wallet Info</h3>
-
-<p id="fullWallet"></p>
+<h3>Worker Stats</h3>
 
 <p>
 Tasks Completed:
@@ -286,11 +262,9 @@ Tasks Completed:
 
 </div>
 
-<!-- MAIN -->
-
 <div class="main">
 
-<!-- TASK CARD -->
+<!-- TASK -->
 
 <div class="card">
 
@@ -300,44 +274,41 @@ Tasks Completed:
 
 <textarea
 id="questionInput"
-placeholder="Write a prompt or instruction..."
+placeholder="Write a prompt..."
 ></textarea>
 
 <button onclick="generateAI()">
-Generate AI Response
+Generate AI
 </button>
 
 <label>AI Response</label>
 
 <textarea
 id="aiAnswer"
-placeholder="AI generated response"
 ></textarea>
 
-<label>Correct / Improve Response</label>
+<label>Correct Response</label>
 
 <textarea
 id="correctedAnswer"
-placeholder="Improve the response..."
 ></textarea>
 
-<label>Rate AI (1–5)</label>
+<label>Rating</label>
 
 <input
 type="number"
 min="1"
 max="5"
 id="ratingInput"
-placeholder="Rating"
 />
 
 <button onclick="submitWork()">
-Submit Task
+Submit Task & Sign
 </button>
 
 </div>
 
-<!-- DATA FEED -->
+<!-- DATA -->
 
 <div class="card">
 
@@ -347,11 +318,11 @@ Submit Task
 
 </div>
 
-<!-- BLOCKCHAIN STREAM -->
+<!-- BLOCKCHAIN -->
 
 <div class="card">
 
-<h3>Live Blockchain Data Stream</h3>
+<h3>Live Blockchain Stream</h3>
 
 <div id="blockStream"></div>
 
@@ -384,7 +355,7 @@ JSON.stringify(data)
 
 }
 
-/* CREATE BLOCK */
+/* BLOCK */
 
 function createBlock(question,corrected){
 
@@ -398,8 +369,7 @@ const block={
 
 index:blockchain.length+1,
 
-timestamp:
-new Date().toLocaleTimeString(),
+timestamp:new Date().toLocaleTimeString(),
 
 question,
 
@@ -422,7 +392,7 @@ displayBlockchain();
 
 }
 
-/* LOAD BLOCKCHAIN */
+/* LOAD */
 
 function loadBlockchain(){
 
@@ -441,7 +411,7 @@ displayBlockchain();
 
 }
 
-/* DISPLAY BLOCKCHAIN */
+/* DISPLAY BLOCKS */
 
 function displayBlockchain(){
 
@@ -464,8 +434,7 @@ div.innerHTML=
 
 "<b>Block #"+block.index+"</b><br>"+
 "Time: "+block.timestamp+"<br>"+
-"Hash: "+block.hash+"<br>"+
-"Prev: "+block.previousHash;
+"Hash: "+block.hash;
 
 container.appendChild(div);
 
@@ -518,17 +487,13 @@ provider.getSigner();
 const addr=
 await signer.getAddress();
 
-/* DISPLAY */
+/* SHORT WALLET */
 
 document.getElementById(
 "wallet"
 ).innerText=
+"🦊 "+
 addr.slice(0,6)+"..."+addr.slice(-4);
-
-document.getElementById(
-"fullWallet"
-).innerText=
-"Wallet: "+addr;
 
 /* SHOW DASH */
 
@@ -538,7 +503,7 @@ document.getElementById(
 
 document.getElementById(
 "dashboard"
-).style.display="flex";
+).style.display="block";
 
 document.getElementById(
 "connectBtn"
@@ -565,14 +530,6 @@ document.getElementById(
 document.getElementById(
 "landing"
 ).style.display="flex";
-
-document.getElementById(
-"connectBtn"
-).style.display="inline-block";
-
-document.getElementById(
-"logoutBtn"
-).style.display="none";
 
 }
 
@@ -606,7 +563,7 @@ Math.random()*responses.length
 
 }
 
-/* SAVE DATA */
+/* SAVE */
 
 function saveData(question,corrected,rating){
 
@@ -618,8 +575,7 @@ corrected,
 
 rating,
 
-date:
-new Date().toLocaleString()
+date:new Date().toLocaleString()
 
 };
 
@@ -681,13 +637,14 @@ container.appendChild(div);
 
 }
 
-/* SUBMIT */
+/* SUBMIT + SIGN */
 
 async function submitWork(){
 
 if(!signer){
 
 alert("Connect wallet first");
+
 return;
 
 }
@@ -707,6 +664,32 @@ document.getElementById("ratingInput").value.trim();
 if(!q||!a||!c||!r){
 
 alert("Complete all fields");
+
+return;
+
+}
+
+/* CREATE MESSAGE */
+
+const message=
+
+"TeachAI Task:\n"+
+q+"\n"+
+c+"\nRating:"+r;
+
+try{
+
+await signer.signMessage(message);
+
+showMessage(
+"🦊 Message Signed"
+);
+
+}
+catch(err){
+
+alert("Signature Cancelled");
+
 return;
 
 }
@@ -715,7 +698,7 @@ return;
 
 createBlock(q,c);
 
-/* SAVE DATA */
+/* SAVE */
 
 saveData(q,c,r);
 
@@ -727,12 +710,6 @@ document.getElementById(
 "taskCount"
 ).innerText=
 tasksCompleted;
-
-/* MESSAGE */
-
-showMessage(
-"✅ Task Saved to Chain"
-);
 
 /* CLEAR */
 
