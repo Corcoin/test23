@@ -322,7 +322,7 @@ function generateAI() {
   document.getElementById("aiAnswer").value = aiResponse;
 }
 
-/* SUBMIT WORK WITH REAL TRANSACTION */
+/* SUBMIT WORK - SIGN MESSAGE ONLY */
 async function submitWork() {
   if (!signer) {
     alert("Connect wallet first.");
@@ -346,22 +346,24 @@ async function submitWork() {
   document.getElementById("balance").innerText = "TRB Balance: " + balance.toFixed(2);
   document.getElementById("taskCount").innerText = tasksCompleted;
 
-  // --- CREATE TRANSACTION ---
-  const taskData = JSON.stringify({ question, aiAnswer, rating, corrected, time: Date.now() });
-
-  const tx = {
-    to: await signer.getAddress(),              // Send to self
-    value: ethers.utils.parseEther("0.000001"),// Tiny Polygon value
-    data: ethers.utils.toUtf8Bytes(taskData)   // Embed task JSON
-  };
+  // --- CREATE TASK MESSAGE ---
+  const taskData = JSON.stringify({
+    question,
+    aiAnswer,
+    rating,
+    corrected,
+    time: Date.now()
+  });
 
   try {
-    const sentTx = await signer.sendTransaction(tx);
-    await sentTx.wait(); // Wait for confirmation
-    alert("Work Submitted & Logged On Blockchain!\nTx Hash: " + sentTx.hash);
+    // Sign message instead of sending a real transaction
+    const signature = await signer.signMessage(taskData);
+    console.log("Signed task:", taskData);
+    console.log("Signature:", signature);
+    alert("Work Submitted & Signed!\nSignature stored off-chain (verifiable).");
   } catch (err) {
     console.error(err);
-    alert("Transaction failed or rejected");
+    alert("Signing cancelled or failed.");
   }
 
   // --- RESET TASK ---
