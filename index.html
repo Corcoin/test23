@@ -3,7 +3,9 @@
 <head>
 <title>TeachAI Worker Portal</title>
 
+<!-- SAFE ETHERS LOAD -->
 <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
 <style>
 
 body {
@@ -178,20 +180,32 @@ Submit Work
 
 <script>
 
-/* STATE */
+/* GLOBAL STATE */
 
 let balance = 0;
 let tasksCompleted = 0;
+
+let provider;
 let signer;
 
 /* CONNECT WALLET */
 
 async function connectWallet() {
 
-if (typeof window.ethereum !== 'undefined') {
+try {
 
-const provider =
-new ethers.providers.Web3Provider(window.ethereum);
+if (!window.ethereum) {
+
+alert("MetaMask not detected.");
+return;
+
+}
+
+provider =
+new ethers.providers.Web3Provider(
+window.ethereum,
+"any"
+);
 
 await provider.send(
 "eth_requestAccounts",
@@ -200,19 +214,27 @@ await provider.send(
 
 signer = provider.getSigner();
 
-let address =
+const address =
 await signer.getAddress();
 
 document.getElementById("wallet")
 .innerText =
-"Connected: " + address;
+"Connected: " +
+address.slice(0,6) +
+"..." +
+address.slice(-4);
 
 document.getElementById("dashboard")
 .style.display = "block";
 
-} else {
+console.log("Wallet connected:", address);
 
-alert("MetaMask not detected.");
+}
+catch (err) {
+
+console.error(err);
+
+alert("Wallet connection failed.");
 
 }
 
@@ -223,33 +245,28 @@ alert("MetaMask not detected.");
 function generateAI() {
 
 let question =
-document.getElementById("questionInput").value;
+document.getElementById("questionInput").value.trim();
 
 if (question.length < 3) {
 
-alert("Enter a question");
-
+alert("Enter a question first");
 return;
 
 }
 
-/* Fake AI logic */
-
 let responses = [
 
-"This appears to be correct based on logic.",
-"The answer depends on additional context.",
-"A possible solution is calculated mathematically.",
-"This result may vary depending on input.",
-"The response is generated based on pattern learning."
+"Based on the input, this appears logically correct.",
+"The correct result depends on additional variables.",
+"This solution may vary depending on context.",
+"The output was generated using learned patterns.",
+"The result is estimated from previous examples."
 
 ];
 
 let aiResponse =
 responses[
-Math.floor(
-Math.random() * responses.length
-)
+Math.floor(Math.random() * responses.length)
 ];
 
 document.getElementById("aiAnswer")
@@ -261,34 +278,41 @@ document.getElementById("aiAnswer")
 
 async function submitWork() {
 
+if (!signer) {
+
+alert("Connect wallet first.");
+return;
+
+}
+
 let question =
-document.getElementById("questionInput").value;
+document.getElementById("questionInput").value.trim();
 
 let aiAnswer =
-document.getElementById("aiAnswer").value;
+document.getElementById("aiAnswer").value.trim();
 
 let rating =
 document.getElementById("rating").value;
 
 let corrected =
-document.getElementById("correctedAnswer").value;
+document.getElementById("correctedAnswer").value.trim();
 
 if (
-question == "" ||
-aiAnswer == "" ||
-rating == "" ||
-corrected == ""
+!question ||
+!aiAnswer ||
+!rating ||
+!corrected
 ) {
 
 alert("Complete all fields");
-
 return;
 
 }
 
-/* Earn Reward */
+/* REWARD */
 
-let reward = parseInt(rating);
+let reward =
+parseInt(rating);
 
 balance += reward;
 
@@ -303,15 +327,17 @@ document.getElementById("taskCount")
 .innerText =
 tasksCompleted;
 
-/* Save Proof On Blockchain */
+/* BLOCKCHAIN SIGN */
 
 let message =
 JSON.stringify({
-question: question,
-aiAnswer: aiAnswer,
-rating: rating,
-corrected: corrected,
+
+question,
+aiAnswer,
+rating,
+corrected,
 time: Date.now()
+
 });
 
 try {
@@ -319,10 +345,13 @@ try {
 await signer.signMessage(message);
 
 alert(
-"Work Submitted & Logged On Blockchain"
+"Work Submitted & Signed"
 );
 
-} catch (err) {
+}
+catch (err) {
+
+console.log(err);
 
 alert("Signature cancelled");
 
