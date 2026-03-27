@@ -7,87 +7,180 @@
 <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
-
+/* =======================
+   GLOBAL STYLES
+======================= */
 body {
-  font-family: Arial;
-  background: #111;
-  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  color: #fff;
   margin: 0;
+  overflow: hidden;
 }
 
-/* TOP BAR */
-
+/* =======================
+   TOP BAR
+======================= */
 .topbar {
-  background: #1a1a1a;
-  padding: 15px;
-  border-bottom: 1px solid #333;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 15px 30px;
   display: flex;
   align-items: center;
+  border-bottom: 1px solid #444;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
 .topbar button {
-  padding: 10px 15px;
-  background: #4CAF50;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #0affd7, #00d4ff);
   border: none;
-  color: white;
+  color: #000;
+  font-weight: bold;
   cursor: pointer;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #00d4ff, 0 0 20px #0affd7 inset;
+  transition: all 0.3s ease;
+}
+
+.topbar button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px #00d4ff, 0 0 40px #0affd7 inset;
 }
 
 #wallet {
-  margin-left: 20px;
+  margin-left: 30px;
+  font-weight: bold;
+  color: #0affd7;
+  text-shadow: 0 0 5px #0affd7;
 }
 
-/* LAYOUT */
-
+/* =======================
+   LAYOUT
+======================= */
 .container {
   display: flex;
-  height: 100vh;
+  height: calc(100vh - 60px);
+  overflow: hidden;
 }
 
-/* SIDEBAR */
-
+/* =======================
+   SIDEBAR
+======================= */
 .sidebar {
-  width: 240px;
-  background: #181818;
+  width: 260px;
+  background: rgba(20,20,20,0.95);
   padding: 20px;
   border-right: 1px solid #333;
+  backdrop-filter: blur(8px);
+  box-shadow: inset -3px 0 10px rgba(0,255,255,0.2);
 }
 
-/* MAIN */
+.sidebar h3 {
+  margin-top: 0;
+  text-transform: uppercase;
+  color: #00d4ff;
+  letter-spacing: 1px;
+}
 
+.menu-item {
+  padding: 12px;
+  background: rgba(255,255,255,0.05);
+  margin-bottom: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.menu-item:hover {
+  background: rgba(0, 255, 223, 0.15);
+  border-left: 4px solid #0affd7;
+}
+
+/* =======================
+   MAIN CONTENT
+======================= */
 .main {
   flex: 1;
-  padding: 20px;
+  padding: 25px;
   overflow-y: auto;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+  border-radius: 0 15px 15px 0;
+  box-shadow: inset 0 0 50px rgba(0,255,223,0.1);
 }
 
-/* TASK BOX */
-
+/* =======================
+   TASK BOXES
+======================= */
 .task-box {
-  background: #222;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #0affd7;
   padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 0 15px rgba(0,255,223,0.3);
+  transition: all 0.4s ease;
 }
 
-textarea {
+.task-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 30px rgba(0,255,223,0.5);
+}
+
+/* TEXTAREAS & SELECTS */
+textarea, select {
   width: 100%;
-  height: 80px;
+  padding: 12px;
   margin-top: 10px;
-  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #0affd7;
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+  resize: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
-select {
-  padding: 10px;
-  margin-top: 10px;
+textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 10px #0affd7;
+  border-color: #00d4ff;
 }
 
+/* BUTTONS */
 button {
-  margin-top: 10px;
-  padding: 10px 15px;
-  background: #4CAF50;
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #0affd7, #00d4ff);
+  color: #000;
+  font-weight: bold;
   border: none;
-  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 15px #0affd7;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px #0affd7, 0 0 20px #00d4ff inset;
+}
+
+/* SCROLLBAR */
+.main::-webkit-scrollbar {
+  width: 12px;
+}
+
+.main::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+}
+
+.main::-webkit-scrollbar-thumb {
+  background: #0affd7;
+  border-radius: 6px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 }
 
 </style>
