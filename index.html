@@ -1,87 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>TeachAI Worker Portal</title>
+<title>TeachAI Worker Portal</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: #111;
-      color: white;
-      text-align: center;
-      padding: 40px;
-    }
+<style>
 
-    button {
-      padding: 12px 20px;
-      font-size: 16px;
-      background: #4CAF50;
-      border: none;
-      color: white;
-      cursor: pointer;
-      margin-top: 20px;
-    }
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  margin: 0;
+}
 
-    .task {
-      background: #222;
-      padding: 15px;
-      margin: 10px;
-      border-radius: 8px;
-    }
+/* Top Bar */
 
-    input {
-      padding: 8px;
-      margin-top: 10px;
-      width: 300px;
-    }
-  </style>
+.topbar {
+  background: #1a1a1a;
+  padding: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.topbar button {
+  padding: 10px 15px;
+  background: #4CAF50;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* Layout */
+
+.container {
+  display: flex;
+}
+
+/* Sidebar */
+
+.sidebar {
+  width: 220px;
+  background: #181818;
+  padding: 20px;
+  border-right: 1px solid #333;
+}
+
+.sidebar h3 {
+  margin-top: 0;
+}
+
+/* Main Area */
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Task Boxes */
+
+.task-box {
+  background: #222;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+}
+
+.task-box button {
+  margin-top: 10px;
+  padding: 8px 12px;
+}
+
+/* Factory Jobs */
+
+.factory-box {
+  background: #1f1f1f;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+/* Address Input */
+
+input {
+  padding: 8px;
+  width: 300px;
+  margin-top: 10px;
+}
+
+</style>
 
 </head>
 
 <body>
 
-<h1>TeachAI Worker Portal</h1>
+<!-- TOP BAR -->
 
-<p>Connect Wallet to Start Working</p>
+<div class="topbar">
 
 <button onclick="connectWallet()">
-  Enter With MetaMask
+Enter With MetaMask
 </button>
 
-<p id="wallet"></p>
+<span id="wallet" style="margin-left:20px;"></span>
 
-<div id="dashboard" style="display:none;">
-
-<h2>Today's Work Tasks</h2>
-
-<div class="task">
-  Review Logic Pattern  
-  Reward: 5 TRB  
-  <br><br>
-  <button onclick="completeTask(5)">
-    Complete Task
-  </button>
 </div>
 
-<div class="task">
-  Rate Training Response  
-  Reward: 4 TRB  
-  <br><br>
-  <button onclick="completeTask(4)">
-    Complete Task
-  </button>
-</div>
+<div class="container">
 
-<div class="task">
-  Solve Micro Logic Test  
-  Reward: 3 TRB  
-  <br><br>
-  <button onclick="completeTask(3)">
-    Complete Task
-  </button>
-</div>
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+<h3>Worker Menu</h3>
+
+<p>AI Training</p>
+<p>Factory Jobs</p>
+<p>Balance</p>
 
 <h3>Your Balance</h3>
 
@@ -89,19 +123,93 @@
 TRB Balance: 0
 </p>
 
-<h3>Factory Address Signup (First 100 Workers)</h3>
+</div>
+
+<!-- MAIN CONTENT -->
+
+<div class="main" id="dashboard" style="display:none;">
+
+<h2>AI Training Tasks</h2>
+
+<!-- AI TRAINING BOXES -->
+
+<div class="task-box">
+
+<strong>Micro Process: Logic Pattern</strong>
+
+<p>
+Rate the logic response accuracy.
+</p>
+
+<button onclick="completeTask(5)">
+Complete Task — Reward 5 TRB
+</button>
+
+</div>
+
+<div class="task-box">
+
+<strong>Micro Process: Response Training</strong>
+
+<p>
+Evaluate AI response quality.
+</p>
+
+<button onclick="completeTask(4)">
+Complete Task — Reward 4 TRB
+</button>
+
+</div>
+
+<div class="task-box">
+
+<strong>Micro Process: Pattern Match</strong>
+
+<p>
+Match correct logic outputs.
+</p>
+
+<button onclick="completeTask(3)">
+Complete Task — Reward 3 TRB
+</button>
+
+</div>
+
+<!-- FACTORY JOB SECTION -->
+
+<div class="factory-box">
+
+<h2>Factory Job Listings</h2>
+
+<p>
+Job: Packaging Team — Need 100 Workers  
+Reward: TRB per shipment  
+Status: OPEN
+</p>
+
+<p>
+Job: Assembly Kit Workers — Need 50 Workers  
+Reward: TRB per completed unit  
+Status: COMING SOON
+</p>
+
+<h3>Enter Address to Apply</h3>
 
 <input
-  type="text"
-  id="addressBox"
-  placeholder="Enter Shipping Address"
+type="text"
+id="addressBox"
+placeholder="Enter Shipping Address"
 />
 
 <br>
 
 <button onclick="saveAddress()">
-Submit Address
+Apply For Factory Work
 </button>
+
+</div>
+
+</div>
 
 </div>
 
@@ -109,60 +217,72 @@ Submit Address
 
 let balance = 0;
 
+/* MetaMask Connect */
+
 async function connectWallet() {
 
-  if (typeof window.ethereum !== 'undefined') {
+if (typeof window.ethereum !== 'undefined') {
 
-    const accounts = await ethereum.request({
-      method: 'eth_requestAccounts'
-    });
+const accounts =
+await ethereum.request({
+method: 'eth_requestAccounts'
+});
 
-    document.getElementById("wallet").innerText =
-      "Connected Wallet: " + accounts[0];
+document.getElementById("wallet").innerText =
+"Connected: " + accounts[0];
 
-    document.getElementById("dashboard").style.display = "block";
+document.getElementById("dashboard").style.display = "block";
 
-  } else {
+} else {
 
-    alert("Install MetaMask first!");
-
-  }
+alert("MetaMask not detected.");
 
 }
+
+}
+
+/* Complete AI Task */
 
 function completeTask(reward) {
 
-  let rating = Math.floor(Math.random() * 5) + 1;
+let rating =
+Math.floor(Math.random() * 5) + 1;
 
-  let earned = reward * (rating / 5);
+let earned =
+reward * (rating / 5);
 
-  balance += earned;
+balance += earned;
 
-  document.getElementById("balance").innerText =
-    "TRB Balance: " + balance.toFixed(2);
+document.getElementById("balance").innerText =
+"TRB Balance: " +
+balance.toFixed(2);
 
-  alert(
-    "Task Completed!\n" +
-    "Rating: " + rating +
-    "\nEarned: " + earned.toFixed(2) + " TRB"
-  );
+alert(
+"Task Completed\n" +
+"Rating: " + rating +
+"\nEarned: " +
+earned.toFixed(2) +
+" TRB"
+);
 
 }
 
+/* Save Factory Address */
+
 function saveAddress() {
 
-  let addr =
-    document.getElementById("addressBox").value;
+let addr =
+document.getElementById("addressBox").value;
 
-  if (addr.length > 5) {
+if (addr.length > 5) {
 
-    alert("Address Saved!");
+alert("Application Submitted");
 
-  } else {
+} else {
 
-    alert("Enter valid address");
+alert("Enter valid address");
 
-  }
+}
 
 }
 
